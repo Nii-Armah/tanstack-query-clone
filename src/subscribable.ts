@@ -16,4 +16,9 @@ export class Subscribable {
     this.#listeners.add(listener);
     return () => this.#listeners.delete(listener);
   }
+
+  notify(): void {
+    const listeners = new Set(this.#listeners);
+    listeners.forEach((listener) => listener());
+  }
 }

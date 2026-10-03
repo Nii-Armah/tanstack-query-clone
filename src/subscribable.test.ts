@@ -48,7 +48,49 @@ describe("Subscribable", () => {
     const unsubscribe = subscribable.subscribe(listener);
     unsubscribe();
 
-    // Calling it again shouldn't throw an error or affect future listeners
     expect(() => unsubscribe()).not.toThrow();
+  });
+
+  it("should notify all registered listeners", () => {
+    const subscribable = new Subscribable();
+    const listenerA = vi.fn();
+    const listenerB = vi.fn();
+
+    subscribable.subscribe(listenerA);
+    subscribable.subscribe(listenerB);
+
+    subscribable.notify();
+
+    expect(listenerA).toHaveBeenCalledTimes(1);
+    expect(listenerB).toHaveBeenCalledTimes(1);
+  });
+
+  it("should safely handle a listener unsubscribing during a notification", () => {
+    const subscribable = new Subscribable();
+
+    const listenerB = vi.fn();
+    const unsubscribeB = subscribable.subscribe(listenerB);
+
+    const listenerC = vi.fn();
+
+    const listenerA = vi.fn(() => {
+      // Unsubscribe B during A's execution
+      unsubscribeB();
+      subscribable.subscribe(listenerC);
+    });
+
+    subscribable.subscribe(listenerA);
+
+    expect(() => subscribable.notify()).not.toThrow();
+
+    expect(listenerA).toHaveBeenCalledTimes(1);
+    expect(listenerB).toHaveBeenCalledTimes(1);
+    expect(listenerC).toHaveBeenCalledTimes(0); // C was not in initial notification batch
+
+    // A subsequent notification should skip B
+    subscribable.notify();
+    expect(listenerA).toHaveBeenCalledTimes(2);
+    expect(listenerB).toHaveBeenCalledTimes(1); // B was removed from notification batch
+    expect(listenerC).toHaveBeenCalledTimes(1); // C is now in notification batch
   });
 });
