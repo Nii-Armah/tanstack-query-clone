@@ -5,6 +5,7 @@ import { QueryCache } from "./queryCache";
 class MockQuery {
   queryKey: readonly unknown[];
   queryHash: string;
+
   constructor(key: readonly unknown[], hash: string) {
     this.queryKey = key;
     this.queryHash = hash;
@@ -22,7 +23,7 @@ describe("QueryCache", () => {
     const query = new MockQuery(["todos"], JSON.stringify(["todos"])) as any;
 
     cache.add(query);
-    expect(cache.get(query.queryHash)).toBe(query);
+    expect(cache.get(query.queryKey)).toBe(query);
     expect(cache.getAll()).toHaveLength(1);
   });
 
@@ -34,7 +35,7 @@ describe("QueryCache", () => {
     expect(cache.getAll()).toHaveLength(1);
 
     cache.remove(query);
-    expect(cache.get(query.queryHash)).toBeUndefined();
+    expect(cache.get(query.queryKey)).toBeUndefined();
     expect(cache.getAll()).toHaveLength(0);
   });
 
@@ -57,5 +58,19 @@ describe("QueryCache", () => {
 
     cache.clear();
     expect(cache.getAll()).toHaveLength(0);
+  });
+
+  it("should notify subscribers when a query is added or removed", () => {
+    const cache = new QueryCache();
+    const listener = vi.fn();
+    cache.subscribe(listener);
+
+    const query = new MockQuery(["todos"], JSON.stringify(["todos"])) as any;
+
+    cache.add(query);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    cache.remove(query);
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 });
