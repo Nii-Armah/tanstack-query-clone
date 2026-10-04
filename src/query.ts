@@ -1,17 +1,11 @@
+import { type QueryState } from "./types";
+
 interface QueryData {
   queryKey: any[];
   queryHash: string;
 }
 
 import { Subscribable } from "./subscribable";
-
-interface QueryState<TData, TError> {
-  data: TData | undefined;
-  error: TError | null;
-  status: "pending" | "success" | "error";
-  fetchStatus: "idle" | "fetching" | "paused";
-  dataUpdatedAt: number;
-}
 
 export class Query<TData, TError> extends Subscribable {
   #promise: Promise<TData> | undefined;
