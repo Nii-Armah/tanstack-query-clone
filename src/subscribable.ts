@@ -1,5 +1,4 @@
-type VoidFunction = () => void;
-type Listener = VoidFunction;
+import { type Listener } from "./types";
 
 export class Subscribable {
   #listeners: Set<Listener>;

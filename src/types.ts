@@ -5,3 +5,6 @@ export interface QueryState<TData, TError> {
   fetchStatus: "idle" | "fetching" | "paused";
   dataUpdatedAt: number;
 }
+
+export type VoidFunction = () => void;
+export type Listener = VoidFunction;
